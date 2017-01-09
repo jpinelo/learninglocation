@@ -1,0 +1,261 @@
+---
+title: "Density plot all activities_Boxplot"
+author: "Joao Pinelo Silva"
+date: "September 8, 2016"
+output: pdf_document
+---
+
+`(Activities Boxplot with Sol)`
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, cache=TRUE, eval=TRUE, comments = FALSE, Messages = FALSE)
+```
+
+### Loading and Preparing Data (echo=FALSE)
+```{r, echo=FALSE}
+input_med <- read.csv(file = "med86220_output_table.txt",
+                      header = TRUE, sep = ",", dec = ".")
+input_sol <- read.csv(file = "sol69102_output_table.txt",
+                      header = TRUE, sep = ",", dec = ".")
+input_hair <- read.csv(file = "hair96020_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_pedu <- read.csv(file = "pedu85200_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_pubs <- read.csv(file = "pubs56302_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_trav <- read.csv(file = "trav79110_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_hosp <- read.csv(file = "hosp86101_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_cafes <- read.csv(file = "cafes56102_output_table.txt",
+                        header = TRUE, sep = ",", dec = ".")
+input_starbucks <- read.csv(file = "starbucks_output_table.txt",
+                            header = TRUE, sep = ",", dec = ".")
+input_waterstones <- read.csv(file = "waterstones_output_table.txt",
+                              header = TRUE, sep = ",", dec = ".")
+
+# Table to select segments without any events to add to each of the landuse coded as 0
+sg <- read.table(file = "m25seg_40stbs_800_1000_1600_3200_n.txt",
+                 header = TRUE, sep = "\t")
+used_seg <- unique(c(input_cafes$Depthmap_R, input_hair$Depthmap_R,
+                     input_hosp$Depthmap_R, input_med$Depthmap_R,
+                     input_pedu$Depthmap_R, input_pubs$Depthmap_R,
+                     input_sol$Depthmap_R, input_starbucks$Depthmap_R,
+                     input_trav$Depthmap_R, input_waterstones$Depthmap_R))
+seg_no_land_use <- sg[!(sg$Ref %in% used_seg), ]
+seg_no_land_use <- seg_no_land_use[ , -c(1:8,18:27)]
+names(seg_no_land_use) <- c("ch_n","ch1600","ch3200","ch800","int_n",
+                            "int1000","int1600","int3200","int800")  
+seg_no_land_use$activity <- 0
+rc <- seg_no_land_use
+```
+
+### I/O Ratio (echo=FALSE)
+```{r, echo=FALSE}
+# Number of segments without activity to add to each group this is to be
+# multiplied by the number of segment with activity
+zeros <- 1 
+```
+
+### Individual Activity Map Segments (echo=FALSE)
+```{r, echo=FALSE}
+cafes <- input_cafes[input_cafes$Depthmap_R != 0, ] # remove events with no segment
+cafes <- cafes[,-c(1:4,6:10,20:30)]
+names(cafes) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                  "int1000","int1600","int3200","int800")  
+cafes <- rbind(cafes, rc[sample(nrow(rc), nrow(cafes)/zeros), ] )
+cafes$activity <- as.factor(cafes$activity)
+levels(cafes$activity) <- c("C_N","C_Y")
+cafes <- cafes[ ,-7]
+
+
+hair <- input_hair[input_hair$Depthmap_R != 0, ] # remove events with no segment
+hair <- hair[,-c(1:4,6:10,20:30)]
+names(hair) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+hair <- rbind(hair, rc[sample(nrow(rc), nrow(hair)/zeros), ] )
+hair$activity <- as.factor(hair$activity)
+levels(hair$activity) <- c("Ha_N","Ha_Y")
+hair <- hair[ ,-7]
+
+
+hosp <- input_hosp[input_hosp$Depthmap_R != 0, ] # remove events with no segment
+hosp <- hosp[,-c(1:4,6:10,20:30)]
+names(hosp) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+hosp <- rbind(hosp, rc[sample(nrow(rc), nrow(hosp)/zeros), ] )
+hosp$activity <- as.factor(hosp$activity)
+levels(hosp$activity) <- c("H_N","H_Y")
+hosp <- hosp[ ,-7]
+
+
+med <- input_med[input_med$Depthmap_R != 0, ] # remove events with no segment
+med <- med[,-c(1:4,6:10,20:30)]
+names(med) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                "int1000","int1600","int3200","int800")  
+med <- rbind(med, rc[sample(nrow(rc), nrow(med)/zeros), ] )
+med$activity <- as.factor(med$activity)
+levels(med$activity) <- c("M_N","M_Y")
+med <- med[ ,-7]
+
+
+pedu <- input_pedu[input_pedu$Depthmap_R != 0, ] # remove events with no segment
+pedu <- pedu[,-c(1:4,6:10,20:30)]
+names(pedu) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+pedu <- rbind(pedu, rc[sample(nrow(rc), nrow(pedu)/zeros), ] )
+pedu$activity <- as.factor(pedu$activity)
+levels(pedu$activity) <- c("Pe_N","Pe_Y")
+pedu <- pedu[ ,-7]
+
+
+pubs <- input_pubs[input_pubs$Depthmap_R != 0, ] # remove events with no segment
+pubs <- pubs[,-c(1:4,6:10,20:30)]
+names(pubs) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+pubs <- rbind(pubs, rc[sample(nrow(rc), nrow(pubs)/zeros), ] )
+pubs$activity <- as.factor(pubs$activity)
+levels(pubs$activity) <- c("P_N","P_Y")
+pubs <- pubs[ ,-7]
+
+
+sol <- input_sol[input_sol$Depthmap_R != 0, ] # remove events with no segment
+sol <- sol[,-c(1:4,6:10,20:30)]
+names(sol) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                "int1000","int1600","int3200","int800")  
+sol <- rbind(sol, rc[sample(nrow(rc), nrow(sol)/zeros), ] )
+sol$activity <- as.factor(sol$activity)
+levels(sol$activity) <- c("So_N","So_Y")
+sol <- sol[ ,-7]
+
+
+starbucks <- input_starbucks[input_starbucks$Depthmap_R != 0, ] # remove events with no segment
+starbucks <- starbucks[,-c(1:4,6:10,20:30)]
+names(starbucks) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                      "int1000","int1600","int3200","int800")  
+starbucks <- rbind(starbucks, rc[sample(nrow(rc), nrow(starbucks)/zeros), ] )
+starbucks$activity <- as.factor(starbucks$activity)
+levels(starbucks$activity) <- c("S_N","S_Y")
+starbucks <- starbucks[ ,-7]
+
+
+trav <- input_trav[input_trav$Depthmap_R != 0, ] # remove events with no segment
+trav <- trav[,-c(1:4,6:10,20:30)]
+names(trav) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+trav <- rbind(trav, rc[sample(nrow(rc), nrow(trav)/zeros), ] )
+trav$activity <- as.factor(trav$activity)
+levels(trav$activity) <- c("T_N","T_Y")
+trav <- trav[ ,-7]
+
+
+waterstones <- input_waterstones[input_waterstones$Depthmap_R != 0, ] # remove events with no segment
+waterstones <- waterstones[,-c(1:4,6:10,20:30)]
+names(waterstones) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                        "int1000","int1600","int3200","int800")  
+waterstones <- rbind(waterstones, rc[sample(nrow(rc), nrow(waterstones)/zeros), ] )
+waterstones$activity <- as.factor(waterstones$activity)
+levels(waterstones$activity) <- c("W_N","W_Y")
+waterstones <- waterstones[ ,-7]
+
+
+all_activities <- rbind(cafes, hair, hosp, med, pedu, pubs, sol, starbucks, trav, waterstones)
+all_activities <- all_activities[all_activities$activity %in% c("W_Y","T_Y","S_Y","So_Y","P_Y","Pe_Y","M_Y","H_Y","Ho_Y","C_Y"), ]
+all_activities$activity <- factor(all_activities$activity)
+
+
+# segment map is sg 
+sg1 <- sg
+
+sol1 <- sol
+starbucks1 <- starbucks
+med1 <- med
+hosp1 <- hosp
+hair1 <- hair
+pedu1 <- pedu
+pubs1 <- pubs
+trav1 <- trav
+cafes1 <- cafes
+waterstones1 <- waterstones
+
+sg1$T1024_Integration <- as.numeric(sg1$T1024_Integration)
+sg1$T1024_Choice <- as.numeric(sg1$T1024_Choice)
+sol1$ch_n <- as.numeric(sol1$ch_n)
+
+
+sg1 <- sg1[sg1$T1024_Choice > 0, ]
+sol1 <- sol1[sol1$ch_n > 0, ]
+starbucks1 <- starbucks1[starbucks1$ch_n > 0, ] 
+med1 <- med1[med1$ch_n > 0, ] 
+hosp1 <- hosp1[hosp1$ch_n > 0, ] 
+hair1 <- hair1[hair1$ch_n > 0, ] 
+pedu1 <- pedu1[pedu1$ch_n > 0, ] 
+pubs1 <- pubs1[pubs1$ch_n > 0, ] 
+trav1 <- trav1[trav1$ch_n > 0, ] 
+cafes1 <- cafes1[cafes1$ch_n > 0, ] 
+waterstones1 <- waterstones1[waterstones1$ch_n > 0, ]
+
+all_activities_only_yes <- all_activities[all_activities$activity %in% c("C_Y", "Ha_Y", "M_Y", "Pe_Y", "P_Y", "So_Y", "S_Y", "T_Y", "W_Y"), ]
+
+ xa <- all_activities_only_yes
+```
+
+
+\newpage
+# Int 800
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+ggplot(data=xa, aes(x=activity, y=int800, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
+\newpage
+# Int 1600
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+ggplot(data=xa, aes(x=activity, y=int1600, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
+\newpage
+# Int 3200
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+ggplot(data=xa, aes(x=activity, y=int3200, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
+\newpage
+# Int n
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+library(ggplot2)
+ggplot(data=xa, aes(x=activity, y=int_n, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
+
+\newpage
+# Ch 800
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+ggplot(data=xa, aes(x=activity, y=log10(ch800)+1, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
+\newpage
+# Ch 1600
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+ggplot(data=xa, aes(x=activity, y=log10(ch1600)+1, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
+\newpage
+# Ch 3200
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+ggplot(data=xa, aes(x=activity, y=log10(ch3200)+1, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
+\newpage
+# Ch n
+```{r,  fig.height=7, fig.width=6, message=FALSE}
+ggplot(data=xa, aes(x=activity, y=log10(ch_n)+1, colour=activity)) +
+  geom_boxplot() +
+  geom_jitter(shape=16, position=position_jitter(0.2), colour="#b2b2b2", alpha=0.3)
+```
