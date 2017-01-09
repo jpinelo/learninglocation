@@ -1,0 +1,282 @@
+---
+title: "Paper Abstract 11SSS"
+author: "Joao Pinelo Silva"
+date: "September 12, 2016"
+output: word_document
+---
+
+
+`(MODEL: 1_PLSDA)`
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, cache=TRUE, eval=TRUE, comments = FALSE, Messages = FALSE)
+```
+
+# Loading and Preparing Data
+```{r }
+input_med <- read.csv(file = "med86220_output_table.txt",
+                      header = TRUE, sep = ",", dec = ".")
+input_sol <- read.csv(file = "sol69102_output_table.txt",
+                      header = TRUE, sep = ",", dec = ".")
+input_hair <- read.csv(file = "hair96020_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_pedu <- read.csv(file = "pedu85200_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_pubs <- read.csv(file = "pubs56302_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_trav <- read.csv(file = "trav79110_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_hosp <- read.csv(file = "hosp86101_output_table.txt",
+                       header = TRUE, sep = ",", dec = ".")
+input_cafes <- read.csv(file = "cafes56102_output_table.txt",
+                        header = TRUE, sep = ",", dec = ".")
+input_starbucks <- read.csv(file = "starbucks_output_table.txt",
+                            header = TRUE, sep = ",", dec = ".")
+input_waterstones <- read.csv(file = "waterstones_output_table.txt",
+                              header = TRUE, sep = ",", dec = ".")
+
+# Table to select segments without any events to add to each of the landuse coded as 0
+sg <- read.table(file = "m25seg_40stbs_800_1000_1600_3200_n.txt",
+                 header = TRUE, sep = "\t")
+used_seg <- unique(c(input_cafes$Depthmap_R, input_hair$Depthmap_R,
+                     input_hosp$Depthmap_R, input_med$Depthmap_R,
+                     input_pedu$Depthmap_R, input_pubs$Depthmap_R,
+                     input_sol$Depthmap_R, input_starbucks$Depthmap_R,
+                     input_trav$Depthmap_R, input_waterstones$Depthmap_R))
+seg_no_land_use <- sg[!(sg$Ref %in% used_seg), ]
+seg_no_land_use <- seg_no_land_use[ , -c(1:8,18:27)]
+names(seg_no_land_use) <- c("ch_n","ch1600","ch3200","ch800","int_n",
+                            "int1000","int1600","int3200","int800")  
+seg_no_land_use$activity <- 0
+rc <- seg_no_land_use
+```
+
+# I/O Ratio
+```{r }
+# Number of segments without activity to add to each group this is to be
+# multiplied by the number of segment with activity
+zeros <- 1 
+```
+
+# Individual Activity Map Segments
+```{r }
+cafes <- input_cafes[input_cafes$Depthmap_R != 0, ] # remove events with no segment
+cafes <- cafes[,-c(1:4,6:10,20:30)]
+names(cafes) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                  "int1000","int1600","int3200","int800")  
+cafes <- rbind(cafes, rc[sample(nrow(rc), nrow(cafes)/zeros), ] )
+cafes$activity <- as.factor(cafes$activity)
+levels(cafes$activity) <- c("N","Y")
+cafes <- cafes[ ,-7]
+str(cafes)
+
+hair <- input_hair[input_hair$Depthmap_R != 0, ] # remove events with no segment
+hair <- hair[,-c(1:4,6:10,20:30)]
+names(hair) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+hair <- rbind(hair, rc[sample(nrow(rc), nrow(hair)/zeros), ] )
+hair$activity <- as.factor(hair$activity)
+levels(hair$activity) <- c("N","Y")
+hair <- hair[ ,-7]
+str(hair)
+
+hosp <- input_hosp[input_hosp$Depthmap_R != 0, ] # remove events with no segment
+hosp <- hosp[,-c(1:4,6:10,20:30)]
+names(hosp) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+hosp <- rbind(hosp, rc[sample(nrow(rc), nrow(hosp)/zeros), ] )
+hosp$activity <- as.factor(hosp$activity)
+levels(hosp$activity) <- c("N","Y")
+hosp <- hosp[ ,-7]
+str(hosp)
+
+med <- input_med[input_med$Depthmap_R != 0, ] # remove events with no segment
+med <- med[,-c(1:4,6:10,20:30)]
+names(med) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                "int1000","int1600","int3200","int800")  
+med <- rbind(med, rc[sample(nrow(rc), nrow(med)/zeros), ] )
+med$activity <- as.factor(med$activity)
+levels(med$activity) <- c("N","Y")
+med <- med[ ,-7]
+str(med)
+
+pedu <- input_pedu[input_pedu$Depthmap_R != 0, ] # remove events with no segment
+pedu <- pedu[,-c(1:4,6:10,20:30)]
+names(pedu) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+pedu <- rbind(pedu, rc[sample(nrow(rc), nrow(pedu)/zeros), ] )
+pedu$activity <- as.factor(pedu$activity)
+levels(pedu$activity) <- c("N","Y")
+pedu <- pedu[ ,-7]
+str(pedu)
+
+pubs <- input_pubs[input_pubs$Depthmap_R != 0, ] # remove events with no segment
+pubs <- pubs[,-c(1:4,6:10,20:30)]
+names(pubs) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+pubs <- rbind(pubs, rc[sample(nrow(rc), nrow(pubs)/zeros), ] )
+pubs$activity <- as.factor(pubs$activity)
+levels(pubs$activity) <- c("N","Y")
+pubs <- pubs[ ,-7]
+str(pubs)
+
+sol <- input_sol[input_sol$Depthmap_R != 0, ] # remove events with no segment
+sol <- sol[,-c(1:4,6:10,20:30)]
+names(sol) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                "int1000","int1600","int3200","int800")  
+sol <- rbind(sol, rc[sample(nrow(rc), nrow(sol)/zeros), ] )
+sol$activity <- as.factor(sol$activity)
+levels(sol$activity) <- c("N","Y")
+sol <- sol[ ,-7]
+str(sol)
+
+starbucks <- input_starbucks[input_starbucks$Depthmap_R != 0, ] # remove events with no segment
+starbucks <- starbucks[,-c(1:4,6:10,20:30)]
+names(starbucks) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                      "int1000","int1600","int3200","int800")  
+starbucks <- rbind(starbucks, rc[sample(nrow(rc), nrow(starbucks)/zeros), ] )
+starbucks$activity <- as.factor(starbucks$activity)
+levels(starbucks$activity) <- c("N","Y")
+starbucks <- starbucks[ ,-7]
+str(starbucks)
+
+trav <- input_trav[input_trav$Depthmap_R != 0, ] # remove events with no segment
+trav <- trav[,-c(1:4,6:10,20:30)]
+names(trav) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                 "int1000","int1600","int3200","int800")  
+trav <- rbind(trav, rc[sample(nrow(rc), nrow(trav)/zeros), ] )
+trav$activity <- as.factor(trav$activity)
+levels(trav$activity) <- c("N","Y")
+trav <- trav[ ,-7]
+str(trav)
+
+waterstones <- input_waterstones[input_waterstones$Depthmap_R != 0, ] # remove events with no segment
+waterstones <- waterstones[,-c(1:4,6:10,20:30)]
+names(waterstones) <- c("activity","ch_n","ch1600","ch3200","ch800","int_n",
+                        "int1000","int1600","int3200","int800")  
+waterstones <- rbind(waterstones, rc[sample(nrow(rc), nrow(waterstones)/zeros), ] )
+waterstones$activity <- as.factor(waterstones$activity)
+levels(waterstones$activity) <- c("N","Y")
+waterstones <- waterstones[ ,-7]
+str(waterstones)
+
+all_activities <- rbind(cafes, hair, med, pedu, pubs, sol, starbucks, trav, waterstones)
+```
+
+\newpage
+
+# Model Cafes
+```{r }
+df <- cafes
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+# Model Solicitors
+```{r }
+df <- sol
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+# Model Medical
+```{r }
+df <- med
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+
+\newpage
+
+# Model Starbucks
+```{r }
+df <- starbucks
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+
+\newpage
+
+# Model Hospitals
+```{r }
+df <- hosp
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+# Model Primary Education
+```{r }
+df <- pedu
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+# Model Hairdresser
+```{r }
+df <- hair
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+# Model Travel Agency
+```{r }
+df <- trav
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+# Model Waterstones
+```{r }
+df <- waterstones
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+# Model Public Houses
+```{r }
+df <- pubs 
+source("1_PLSDA.R", echo = TRUE, print.eval = TRUE, max.deparse.length = 1000000)
+```
+
+\newpage
+
+### Notes
+**Sensitivity** (also called the true positive rate, the recall, or probability of detection[1] in some fields) measures the proportion of positives that are correctly identified as such (e.g., the percentage of sick people who are correctly identified as having the condition).      
+
+**Specificity** (also called the true negative rate) measures the proportion of negatives that are correctly identified as such (e.g., the percentage of healthy people who are correctly identified as not having the condition).  
+
+```{r }
+title <- "The Syntactic Signature of Starbucks' Location: Towards a machine-learning approach to location decision-making"
+```
+alt title: Looking for Starbucks? Follow these steps!
+
+\newpage
+
+# Abstract
+
+### `r title`
+### Land use studies and urban economies???
+
+Key words:  space syntax, land use, machine learning
+
+This paper describes an experimental method that has been developed to investigate the relationship between space syntax variables, and the location of specific activities. The method aims at identifying the signature patterns of several land use categories based on their location, regarding syntactic variables.
+Syntactic variables are known to correlate with urban phenomena such as pedestrian and vehicular traffic flow (Penn, 1998; Lerman, Rofè et al. 2014). The natural movement theory (Hillier, 1993) suggests that such phenomena are the effect of the asymmetry created by the spatial configuration. The theory proposes that location is determined based on configurational properties, to attain particular exposure to users. The natural movement paradigm suggests that land use categories require a set of characteristics of accessibility measured by space syntax variables, which would lead to the desired exposure. Based on this assumption, we use machine learning techniques to find the underlying location requirements of 16702 events, over ten categories, in London's metropolitan region.
+Both supervised and unsupervised methods were applied. Through partial least squares discriminant analysis (PLSDA), a supervised method, it was possible to learn the pattern of occupation (model) of several categories, based, exclusively, on several measurements of the variables integration and choice. When applied to testing datasets, the models showed encouraging results. For example, the model used in category Starbucks reached an accuracy of 0.65 (95% CI: 0.61, 0.70), at P-Value [Acc > NIR] < 0.001, Mcnemar's Test P-Value < 0.001, Sensitivity: 0.8162, Specificity: 0.4853, on the testing set.
+Despite the moderate but statistically significant results, the experimental method shows promising for the identification of the syntactic signature of certain categories of land use. Identifying such signatures could lead to the incorporation of more fact-based data into location decision making, increasing its intelligence. Extensive use of the methodology could perhaps reveal a new classification of land use based on the clarity of their syntactic signature. The results also serve as a partial endorsement of the natural movement theory.    
+
+
+###References       
+
+Hillier, B., A. Penn, J. Hanson, T. Grajewski and J. Xu (1993). "Natural Movement - Or, Configuration and Attraction in Urban Pedestrian Movement." Environment and Planning B: Planning and Design - Pion Ltd 20(1): 29-66.     
+
+Lerman, Y., Y. Rofè and I. Omer (2014). "Using Space Syntax to Model Pedestrian Movement in Urban Transportation Planning." Geographical Analysis 46(4): 392-410.      
+
+Penn, A., Hillier, B., Banister, D., Xu, J. (1998). "Configurational modelling of urban movement networks." Environment and Planning B-Planning & Design 25: 59.     
+
